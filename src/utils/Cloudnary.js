@@ -16,7 +16,7 @@ const upoadOnCloudinary = async (loacalfilePath) => {
             resource_type: "auto",
         })
 
-        console.log("Uplaod Successfully", response.url)
+        fs.unlinkSync(loacalfilePath);
         return response;
     } catch (err) {
 
