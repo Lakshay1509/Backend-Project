@@ -113,7 +113,7 @@ const loginUser = asyncHandler(async (req, res) => {
     //send response
 
     const {email,username, password} = req.body
-    console.log(email)
+
 
     if(!username && !email){
         throw new ApiError(400, "Please provide username or email")
@@ -179,4 +179,52 @@ const logoutUser = asyncHandler(async (req, res) => {
 })
 
 
-export {registerUser, loginUser,logoutUser}
+const refereshToken = asyncHandler(async (req, res) => {
+
+   const incomingRefereshToken= req.cookies.referesh||req.body.referesh
+
+    if(!incomingRefereshToken){
+         throw new ApiError(401, "Please provide referesh token")
+    }
+
+    try {
+        const decodeToken =  jwt.verify(incomingRefereshToken, process.env.REFRESH_TOKEN_SECRET)
+    
+    
+       const user =  User.findById(decodeToken?._id)
+    
+        if(!user){
+             throw new ApiError(404, "User not found")
+        }
+    
+    
+        if(incomingRefereshToken !== user.refereshToken){
+            throw new ApiError(401, "Invalid referesh token")
+        }
+    
+        const options={
+            httpOnly: true,
+            secure: true
+        }
+    
+    
+        const {Newreferesh,access} =await generateAccessandRefereshToken(user._id)
+    
+        return res.status(200).cookie("access", access, options).cookie("referesh",Newreferesh,options).json(
+            new ApiResponse(200, 
+                {access,refereshToken: Newreferesh},
+                "Token generated successfully"
+            )
+        )
+    } catch (error) {
+
+        throw new ApiError(401, error?.message||"Invalid referesh token")
+        
+    }
+
+
+
+})
+
+
+export {registerUser, loginUser,logoutUser, refereshToken}
