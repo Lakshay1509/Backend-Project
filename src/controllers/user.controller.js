@@ -337,7 +337,4 @@ const imageUpdate = asyncHandler(async(req,res)=>{
 })
 
 
-
-
-
 export {registerUser, loginUser,logoutUser, refereshToken,changeCurrentPassword,getCurrentUser,updateAccount,avatarUpdate, imageUpdate}
