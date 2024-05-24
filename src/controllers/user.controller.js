@@ -227,4 +227,117 @@ const refereshToken = asyncHandler(async (req, res) => {
 })
 
 
-export {registerUser, loginUser,logoutUser, refereshToken}
+const changeCurrentPassword = asyncHandler(async(req,res)=>{
+
+    const{oldPassword, newPassword} = req.body
+
+    const user = await User.findById(req.user?._id)
+
+     const isPasswordCorrect= await user.isPasswordCorrect(oldPassword)
+
+
+    if(!isPasswordCorrect){
+        throw new ApiError(401, "Invalid password")
+    }
+
+    user.password = newPassword
+    await user.save({validateBeforeSave: false})
+
+    return res.status(200).json(new ApiResponse(200, "Password changed successfully"))
+})
+
+const getCurrentUser = asyncHandler(async(req,res)=>{
+
+    return res.status(200).json(new ApiResponse(200, req.user, "User found"))
+
+})
+
+const updateAccount = asyncHandler(async(req,res)=>{
+
+    const {fullname, email} = req.body
+
+    if(!fullname || !email){
+        throw new ApiError(400, "Please provide fullname and email")
+    
+    }
+
+
+    await User.findByIdAndUpdate(
+
+        req.user?._id,
+
+        {
+            $set: {
+                fullname,
+                email
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password ")
+
+    return res.status(200).json(new ApiResponse(200, "Account updated successfully"))
+})
+
+
+const avatarUpdate = asyncHandler(async(req,res)=>{
+
+    const avatarPath = req.file?.path
+
+    if(!avatarPath){
+        throw new ApiError(400, "Please upload avatar")
+    }
+
+    const avatarUrl = await upoadOnCloudinary(avatarPath)
+
+    if(!avatarUrl.url){
+        throw new ApiError(500, "Error uploading avatar")
+    }
+
+    await User.findByIdAndUpdate(req.user._id, {
+        $set: {
+            avatar: avatarUrl.url
+        }
+    },
+    {
+        new: true
+    }
+    ).select("-password")
+
+    return res.status(200).json(new ApiResponse(200, "Avatar updated successfully"))
+})
+
+
+const imageUpdate = asyncHandler(async(req,res)=>{
+
+    const imagePath = req.file?.path
+
+    if(!imagePath){
+        throw new ApiError(400, "Please upload avatar")
+    }
+
+    const imageUrl = await upoadOnCloudinary(imagePath)
+
+    if(!imageUrl.url){
+        throw new ApiError(500, "Error uploading avatar")
+    }
+
+    await User.findByIdAndUpdate(req.user._id, {
+        $set: {
+            coverImage: imageUrl.url
+        }
+    },
+    {
+        new: true
+    }
+    ).select("-password")
+
+    return res.status(200).json(new ApiResponse(200, "Image updated successfully"))
+})
+
+
+
+
+
+export {registerUser, loginUser,logoutUser, refereshToken,changeCurrentPassword,getCurrentUser,updateAccount,avatarUpdate, imageUpdate}
