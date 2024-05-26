@@ -158,8 +158,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     User.findByIdAndUpdate(req.user._id,
         {
 
-            $set: {
-                refereshToken: undefined
+            $unset: {
+                refereshToken: 1
             }
         },
         {
