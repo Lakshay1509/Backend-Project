@@ -50,6 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Please fill in all fields")
 
     }
+    
 
     const existedUser = await User.findOne({
         $or: [{ email }, { username }]
